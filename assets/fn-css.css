@@ -1,0 +1,188 @@
+:root{
+  --brand-blue: #337ab7;
+  --brand-font: 'Montserrat', sans-serif;
+}
+
+
+.text-right {
+  text-align: right;
+}
+
+.forget-password-container {
+  display: none;
+  min-height: 400px;
+  margin-top: 80px;
+}
+
+@media (min-width: 768px) {
+  .forget-password-container form {
+    margin-top: 100px;
+  }
+}
+
+
+.code-management-table .dataTables_length {
+  margin-bottom: 24px;
+}
+
+.code-management-table table {
+  /* table-layout: fixed; */
+  width: 99%;
+}
+.code-management-table table th {
+  color: #1b73a3;
+  font-size: 16px;
+  line-height: 1.5 !important;
+  font-weight: 400 !important;
+}
+
+/* .code-management-table table td{
+    width: auto;
+} */
+
+.vertical-ellipsis-button {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  position: relative;
+  text-align: center;
+  margin: auto;
+  display: block;
+}
+
+/* Define the dot styles */
+.dot {
+  width: 4px;
+  height: 4px;
+  background-color: #337ab7;
+  border-radius: 100%;
+  display: block;
+  margin: 5px auto;
+}
+
+.code-management-table table{
+  width: 99% !important;
+}
+
+
+.code-management-table table thead tr th {
+  border-bottom-color: #000;
+}
+
+.code-management-table table tr:not(.details-row) th:first-child,
+.code-management-table table tr:not(.details-row) td:first-child {
+  max-width: 20px !important;
+  border-right: none !important;
+}
+
+
+
+.code-management-table table tr:not(.details-row) th:nth-child(2),
+.code-management-table table tr:not(.details-row) td:nth-child(2) {
+  border-left: none !important;
+}
+.code-management-table table tr:not(.details-row) th:last-child,
+.code-management-table table tr:not(.details-row) td:last-child {
+  max-width: 20px !important;
+  border-left: none !important;
+}
+.code-management-table table tr:not(.details-row) th:not(:last-child),
+.code-management-table table tr:not(.details-row) td:not(:last-child) {
+  border-right: none !important;
+}
+
+.code-management-table table tr.details-row,
+.code-management-table table tr.details-row td{
+  border-top: none !important;
+}
+
+.code-management-table table tr:not(.details-row)
+.code-management-table table tr:not(.details-row) td{
+  border-top: none !important;
+}
+
+.code-management-table table .state span  {
+  color: #0082C7;
+  transition: all 3s ease-in-out;
+}
+
+.code-management-table table .state span.fa-chevron-up  {
+  display: none;
+}
+.code-management-table table .state span.fa-chevron-down  {
+  display: block;
+}
+.code-management-table table tr.active .state span.fa-chevron-up  {
+  display: block;
+}
+.code-management-table table tr.active .state span.fa-chevron-down  {
+  display: none;
+}
+
+.code-management-table table tr.details-row{  
+  display: none !important;
+  text-align: center;
+  transition: all 3s ease-in-out;
+}
+
+.code-management-table table tr.details-row.expand{  
+  display: table-row !important;
+}
+
+.code-management-table table tr.visible-row.active{
+  background-color: #0082C7;
+}
+
+span.break-word {
+  word-break: break-all;
+}
+
+.green-tick i {
+  color: green;
+}
+
+.code-management-table .order,
+.code-management-table .order_data {
+  display: none;
+}
+.code-management-table .client_email,
+.code-management-table .client_email_data {
+  display: none;
+}
+.code-management-table .sent_date,
+.code-management-table .sent_date_data {
+  display: none;
+}
+.code-management-table .claimed_date,
+.code-management-table .claimed_date_data {
+  display: none;
+}
+
+/* Style for the rounded corners on both sides of the input group */
+.table-search-field .rounded-start {
+  border-radius: 15px 0 0 15px;
+}
+
+.table-search-field .rounded-end {
+  border-radius: 0 15px 15px 0;
+}
+
+
+h1.headline{
+  color: var(--brand-blue);
+  font-weight: 500;
+  margin-bottom: 30px;
+}
+.customer-message{
+  margin-bottom: 30px;
+}
+
+.costumer-message2{
+  margin-bottom: 30px;
+}
+
+.singup-link{
+  font-weight: 700;
+  color: var(--brand-blue);
+}
