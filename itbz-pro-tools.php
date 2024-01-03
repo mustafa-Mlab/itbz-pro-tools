@@ -1,18 +1,18 @@
 <?php
 /**
- * @link    http://mkhossain.com/development/plugins/itbz-access-code-management
- * @package ITBZ_access_code_management
+ * @link    http://mkhossain.com/development/plugins/itbz-pro-tools
+ * @package ITBZ_pro-tools
  * @since   1.0.0
  * @version 1.0.1
  * 
  * @wordpress-plugin
- * Plugin Name: ITBZ Access Code Management For Program
- * Plugin URI: http://mkhossain.com/development/plugins/itbz-access-code-management
- * Description: Just a simple plugin to create access codes for the pro teachers in BRB2. It is a custom wordpress plugin working with woocomerce and elementor also with cartflows. 
+ * Plugin Name: ITBZ Pro Tools
+ * Plugin URI: http://mkhossain.com/development/plugins/itbz-pro-tools
+ * Description: This plugin will help to implement a feature inside our system that allows pro teachers to create, update, and share exercise tools with their clients using a credit system. 
  * Author: MD Mustafa Kamal Hossain	
  * Version: 1.0.1
  * Author URI: http://mkhossain.com
- * Text Domain: itbz-access-code-management
+ * Text Domain: itbz-pro-tools
  * Domain Path: /languages
  */
 
@@ -29,34 +29,34 @@ if (!defined('WPINC')) {
   die;
 }
 
-if ( ! defined( 'ITBZ_ACCESS_CODE_MANAGEMENT_FILE' ) ) {
-  define( 'ITBZ_ACCESS_CODE_MANAGEMENT_FILE', __FILE__ );
+if ( ! defined( 'ITBZ_PRO_TOOLS_FILE' ) ) {
+  define( 'ITBZ_PRO_TOOLS_FILE', __FILE__ );
 }
 
-if ( ! defined( 'ITBZ_ACCESS_CODE_MANAGEMENT_PATH' ) ) {
-  define( 'ITBZ_ACCESS_CODE_MANAGEMENT_PATH', plugin_dir_path( ITBZ_ACCESS_CODE_MANAGEMENT_FILE ));
+if ( ! defined( 'ITBZ_PRO_TOOLS_PATH' ) ) {
+  define( 'ITBZ_PRO_TOOLS_PATH', plugin_dir_path( ITBZ_PRO_TOOLS_FILE ));
 }
 
-if ( ! defined( 'ITBZ_ACCESS_CODE_MANAGEMENT_DIR_URL' ) ) {
-  define( 'ITBZ_ACCESS_CODE_MANAGEMENT_DIR_URL',  plugin_dir_url( ITBZ_ACCESS_CODE_MANAGEMENT_FILE ));
+if ( ! defined( 'ITBZ_PRO_TOOLS_DIR_URL' ) ) {
+  define( 'ITBZ_PRO_TOOLS_DIR_URL',  plugin_dir_url( ITBZ_PRO_TOOLS_FILE ));
 }
 
 
 /**
  * Currently plugin version.
  */
-define( 'ITBZ_ACCESS_CODE_MANAGEMENT_VERSION', '1.0.1' );
+define( 'ITBZ_PRO_TOOLS_VERSION', '1.0.1' );
 
 /**
  * Define custom table name
  */
-define('ITBZ_ACCESS_CODE_TABLE', 'itbz_access_code_transactions');
+// define('ITBZ_PRO_TOOLS_TABLE', 'itbz_pro_tools_transactions');
 
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/activator.php
  */
-function activate_itbz_access_code_management() {
+function activate_itbz_pro_tools() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/activator.php';
 }
 
@@ -64,7 +64,7 @@ function activate_itbz_access_code_management() {
  * The code that runs during plugin deactivation.
  * This action is documented in includes/deactivator.php
  */
-function deactivate_itbz_access_code_management() {
+function deactivate_itbz_pro_tools() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/deactivator.php';
 }
 
@@ -72,13 +72,13 @@ function deactivate_itbz_access_code_management() {
  * The code that runs during plugin deletion.
  * This action is documented in includes/deletion.php
  */
-function itbz_access_code_management_uninstall() {
+function itbz_pro_tools_uninstall() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/deletion.php';
 }
 
-register_activation_hook( __FILE__, 'activate_itbz_access_code_management' );
-register_deactivation_hook( __FILE__, 'deactivate_itbz_access_code_management' );
-register_uninstall_hook(__FILE__, 'itbz_access_code_management_uninstall');
+register_activation_hook( __FILE__, 'activate_itbz_pro_tools' );
+register_deactivation_hook( __FILE__, 'deactivate_itbz_pro_tools' );
+register_uninstall_hook(__FILE__, 'itbz_pro_tools_uninstall');
 
 // Include necessary WordPress functions
 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -86,25 +86,25 @@ require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
 
 /** Add css and javascript file for frontend */
-function enqueue_access_code_script() {
-  wp_enqueue_style('access-code-styles', ITBZ_ACCESS_CODE_MANAGEMENT_DIR_URL . 'assets/fn-css.css', array(), '1.0');
+function enqueue_pro_tools_script() {
+  wp_enqueue_style('pro-tools-styles', ITBZ_PRO_TOOLS_DIR_URL . 'assets/front-end.css', array(), '1.0');
 
 
-  wp_enqueue_script('access-code-script', ITBZ_ACCESS_CODE_MANAGEMENT_DIR_URL . 'assets/access-code.js' , array('jquery'), '1.0', true);
+  wp_enqueue_script('pro-tools-script', ITBZ_PRO_TOOLS_DIR_URL . 'assets/pro-tools.js' , array('jquery'), '1.0', true);
 
   // Localize the script to make 'ajaxurl' available in JavaScript
-  wp_localize_script('access-code-script', 'essentialData', array(
+  wp_localize_script('pro-tools-script', 'essentialData', array(
     'ajaxurl' => admin_url('admin-ajax.php')
   ));
 }
-add_action('wp_enqueue_scripts', 'enqueue_access_code_script');
+add_action('wp_enqueue_scripts', 'enqueue_pro_tools_script');
 
 function enqueue_dataTables() {
 
-  wp_enqueue_style('admin-part-css', ITBZ_ACCESS_CODE_MANAGEMENT_DIR_URL . 'assets/admin-part.css', array(), '1.0');
+  wp_enqueue_style('admin-part-css', ITBZ_PRO_TOOLS_DIR_URL . 'assets/admin-part.css', array(), '1.0');
   wp_enqueue_script('jquery');
 
-  wp_enqueue_script('access-code-admin', ITBZ_ACCESS_CODE_MANAGEMENT_DIR_URL . 'assets/admin-part.js' , array('jquery'), '1.0', true);
+  wp_enqueue_script('pro-tools-admin', ITBZ_PRO_TOOLS_DIR_URL . 'assets/admin-part.js' , array('jquery'), '1.0', true);
 
   wp_enqueue_script('dataTables', 'https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js', array('jquery'), '1.10.24', true);
   wp_enqueue_style('dataTables-css', 'https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css');
@@ -185,10 +185,10 @@ function check_woocommerce() {
     }
 
 
-    add_filter('product_type_selector', 'add_access_code_product_type');
-    // add_filter('product_type_options', 'add_access_code_product_type');
+    add_filter('product_type_selector', 'add_pro_tools_product_type');
+    // add_filter('product_type_options', 'add_pro_tools_product_type');
 
-    function add_access_code_product_type($types) {
+    function add_pro_tools_product_type($types) {
         $types['access_code'] = __('Access Code', 'woocommerce');
         return $types;
     }
@@ -319,12 +319,12 @@ function check_woocommerce() {
       }
     }
 
-    function add_access_code_product_type_support($product_types) {
-      $product_types[] = 'access-code';
+    function add_pro_tools_product_type_support($product_types) {
+      $product_types[] = 'pro-tools';
       return $product_types;
     } 
   
-    add_filter('woocommerce_product_supported_types', 'add_access_code_product_type_support');
+    add_filter('woocommerce_product_supported_types', 'add_pro_tools_product_type_support');
   
 
   }
@@ -337,7 +337,7 @@ add_action('init', 'check_woocommerce');
  * @param int $order_id
  * @return void
  */
-function itbz_access_code_management_order_completed($order_id) {
+function itbz_pro_tools_order_completed($order_id) {
   // Get the order object
   $order = wc_get_order($order_id);
   $items = $order->get_items();
@@ -356,7 +356,7 @@ function itbz_access_code_management_order_completed($order_id) {
           $completed_date_time = $order->get_date_completed();
           $access_code = md5('access code ' . $order_id . ' ' . $teacher_name . ' ' . $completed_date_time . ' ' . $i);
 
-          itbz_access_code_management_insert_coupon($access_code, $order_id, $associate_product);
+          itbz_pro_tools_insert_coupon($access_code, $order_id, $associate_product);
         }
       }
     }
@@ -371,11 +371,11 @@ function itbz_access_code_management_order_completed($order_id) {
  * @param int $associate_product
  * @return void
  */
-function itbz_access_code_management_insert_coupon($access_code, $order_id, $associate_product) {
+function itbz_pro_tools_insert_coupon($access_code, $order_id, $associate_product) {
   global $wpdb;
   $traning_db = get_training_db();
   $training_db_prefix = 'uvw_';
-  $table_name = $training_db_prefix . ITBZ_ACCESS_CODE_TABLE;
+  $table_name = $training_db_prefix . ITBZ_PRO_TOOLS_TABLE;
 
   $order = wc_get_order($order_id);
 
@@ -398,7 +398,7 @@ function itbz_access_code_management_insert_coupon($access_code, $order_id, $ass
 
   
   
-  // Insert access code data into our custom table which is itbz_access_code_transactions
+  // Insert access code data into our custom table which is itbz_pro_tools_transactions
   $newAccessCode = $traning_db->insert(
       $table_name,
       array(
@@ -414,7 +414,7 @@ function itbz_access_code_management_insert_coupon($access_code, $order_id, $ass
 }
 
 // Hook into WooCommerce order completed action
-add_action('woocommerce_order_status_completed', 'itbz_access_code_management_order_completed', 10, 1);
+add_action('woocommerce_order_status_completed', 'itbz_pro_tools_order_completed', 10, 1);
 
 
 /** 
@@ -440,7 +440,7 @@ function handle_custom_registration_or_login() {
   if (get_query_var('acode')) {
     $access_code = sanitize_text_field(get_query_var('acode'));
     
-    $result = get_access_code_details_by_access_code($access_code);
+    $result = get_pro_tools_details_by_access_code($access_code);
     $custom_login_url = get_permalink( get_option('custom_login_page_slug') );
     
     if ($result) {
@@ -493,7 +493,7 @@ function handle_custom_registration_form_submission() {
       $access_code = sanitize_text_field($_POST['access_code']);
       $guess_date = sanitize_text_field($_POST['guess_date']);
 
-      $access_code_details = get_access_code_details_by_access_code($access_code);
+      $access_code_details = get_pro_tools_details_by_access_code($access_code);
 
       //check if email already exist 
       $email_exist = email_exists($email);
@@ -560,7 +560,7 @@ function handle_custom_registration_form_submission() {
           // Now change the claim status of the acccess_code
           $traning_db = get_training_db();
           $training_db_prefix = 'uvw_';
-          $table_name = $training_db_prefix . ITBZ_ACCESS_CODE_TABLE;
+          $table_name = $training_db_prefix . ITBZ_PRO_TOOLS_TABLE;
           
           $updated = $traning_db->update(
             $table_name, 
@@ -601,10 +601,10 @@ add_action('init', 'handle_custom_registration_form_submission');
  * @return array that access code row from database
  */
 
-function get_access_code_details($access_code_id){
+function get_pro_tools_details($access_code_id){
   $traning_db = get_training_db();
   $training_db_prefix = 'uvw_';
-  $table_name = $training_db_prefix . ITBZ_ACCESS_CODE_TABLE;
+  $table_name = $training_db_prefix . ITBZ_PRO_TOOLS_TABLE;
   $query = $traning_db->prepare("
       SELECT *
       FROM $table_name
@@ -620,10 +620,10 @@ function get_access_code_details($access_code_id){
  * @return array That access code row from database table
  */
 
-function get_access_code_details_by_access_code($access_code){
+function get_pro_tools_details_by_access_code($access_code){
   $traning_db = get_training_db();
   $training_db_prefix = 'uvw_';
-  $table_name = $training_db_prefix . ITBZ_ACCESS_CODE_TABLE;
+  $table_name = $training_db_prefix . ITBZ_PRO_TOOLS_TABLE;
   $query = $traning_db->prepare("
       SELECT *
       FROM $table_name
