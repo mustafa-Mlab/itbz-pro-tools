@@ -1,9 +1,29 @@
 <?php
 
-function itbz_access_code_management_activate() {
-    // $custom_login_url = create_custom_login_page();
-    // $custom_registration_url = create_custom_registration_page();
+function itbz_pro_tools_activate() {
+  $result = add_role(
+    'tools_manager',  
+    'Tools Manager',  
+    array(
+      'read' => true,
+      'edit_posts' => true,
+      'delete_posts' => true,
+      'publish_posts' => true,
+      'edit_others_posts' => true,
+      'delete_others_posts' => true,
+      'manage_categories' => true,
+      'manage_exercise_tools' => true,  
+    )
+  );
+
+  if ($result) {
+    // Role created successfully
+    echo 'Tools Manager role created successfully!';
+  } else {
+    // Role already exists
+    echo 'Tools Manager role already exists.';
+  }
 }
 
 
-itbz_access_code_management_activate();
+itbz_pro_tools_activate();
