@@ -3,14 +3,14 @@
  * @link    http://mkhossain.com/development/plugins/itbz-pro-tools
  * @package ITBZ_pro-tools
  * @since   1.0.0
- * @version 1.0.1
+ * @version 1.2.0
  * 
  * @wordpress-plugin
  * Plugin Name: ITBZ Pro Tools
  * Plugin URI: http://mkhossain.com/development/plugins/itbz-pro-tools
  * Description: This plugin will help to implement a feature inside our system that allows pro teachers to create, update, and share exercise tools with their clients using a credit system. 
  * Author: MD Mustafa Kamal Hossain	
- * Version: 1.0.1
+ * Version: 1.2.0
  * Author URI: http://mkhossain.com
  * Text Domain: itbz-pro-tools
  * Domain Path: /languages
@@ -84,7 +84,6 @@ register_uninstall_hook(__FILE__, 'itbz_pro_tools_uninstall');
 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
 
-
 /** Add css and javascript file for frontend */
 function enqueue_pro_tools_script() {
   wp_enqueue_style('pro-tools-styles', ITBZ_PRO_TOOLS_DIR_URL . 'assets/front-end.css', array(), '1.0');
@@ -112,13 +111,44 @@ function enqueue_itbz_pro_tools_admin_js_css() {
 add_action('admin_enqueue_scripts', 'enqueue_itbz_pro_tools_admin_js_css');
 
 
+// function thelog($message) {
+//   // Define the log file path
+//   $log_file = WP_CONTENT_DIR . '/custom-log.txt';
 
-// require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-post-type.php';
+//   // Create or open the log file for appending
+//   $file_handle = fopen($log_file, 'a');
+
+//   // Check if the file was opened successfully
+//   if ($file_handle) {
+//       // Create a timestamp
+//       $timestamp = date('Y-m-d H:i:s');
+
+//       // Format the log message with timestamp
+//       $log_message = "[$timestamp] $message\n";
+
+//       // Write the log message to the file
+//       fwrite($file_handle, $log_message);
+
+//       // Close the file
+//       fclose($file_handle);
+//   } else {
+//       // Handle any errors, e.g., unable to open the file
+//       error_log("Failed to open or create the log file: $log_file");
+//   }
+// }
+
+  function get_training_db_for_pro_tools(){
+    return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
+  }
+
+
+  // require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-post-type.php';
 // require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-taxonomy.php';
 // require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-page-meta-field.php';
 // require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-meta-fields.php';
 // require_once plugin_dir_path( __FILE__ ) . 'includes/admin-screens.php';
 // require_once plugin_dir_path( __FILE__ ) . 'includes/client-screens.php';
+
 
 // Register REST API endpoint for checking pro teacher status
 add_action('rest_api_init', function () {
@@ -192,7 +222,6 @@ if (!function_exists('check_if_pro_teachers')) {
   }
 }
 
-
 // Register REST API endpoint for checking tools manager status
 add_action('rest_api_init', function () {
   register_rest_route('pro-tools-fc/v1', '/check_tools_manager_status/', array(
@@ -214,10 +243,7 @@ function check_tools_manager_status_endpoint($data) {
   $user_email = sanitize_email($data['user_email']);
   $tools_manager_status = if_tools_manager_callback($user_email);
 
-  return array(
-      'user_email' => $user_email,
-      'is_tools_manager' => $tools_manager_status,
-  );
+  return $tools_manager_status;
 }
 
 // Function to check if the user is a tools manager
@@ -265,7 +291,7 @@ function redirect_tools_manager() {
 // Prevent Tools manager to login on admin panel
 add_action( 'login_redirect', 'redirect_tools_manager' );
 function prevent_tools_manager_admin_access() {
-  if ( if_tools_manage() && is_admin() ) {
+  if ( if_tools_manager() && is_admin() ) {
     wp_redirect( home_url() );
     exit;
   }
@@ -273,75 +299,52 @@ function prevent_tools_manager_admin_access() {
 add_action( 'admin_init', 'prevent_tools_manager_admin_access' );
 
 
-function thelog($message) {
-  // Define the log file path
-  $log_file = WP_CONTENT_DIR . '/custom-log.txt';
-
-  // Create or open the log file for appending
-  $file_handle = fopen($log_file, 'a');
-
-  // Check if the file was opened successfully
-  if ($file_handle) {
-      // Create a timestamp
-      $timestamp = date('Y-m-d H:i:s');
-
-      // Format the log message with timestamp
-      $log_message = "[$timestamp] $message\n";
-
-      // Write the log message to the file
-      fwrite($file_handle, $log_message);
-
-      // Close the file
-      fclose($file_handle);
-  } else {
-      // Handle any errors, e.g., unable to open the file
-      error_log("Failed to open or create the log file: $log_file");
-  }
-}
-
-
-if (!function_exists('get_training_db')) {
-  function get_training_db(){
-    return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
-  }
-}
-
-
 // Ensure WooCommerce is loaded
 function check_woocommerce_for_pro_tools_product() {
   if (class_exists('WooCommerce')) {
 
     /**
-     * Adding Custom product type for credit product
+     * Adding Custom product type for credit product and packages
     */
     class WC_Product_Credit extends WC_Product_Simple {
       public function __construct($product) {
-        $this->product_type = 'credit';
-        $this->purchasable = true;
-        $this->downloadable = false;
-        $this->virtual = true;
-        $this->sold_individually = true;
-        $this->manage_stock = false;
-        $this->supports[]   = 'ajax_add_to_cart';
         parent::__construct($product);
+        $this->product_type = 'credit';
       }
-
+    
       public function get_type() {
         return 'credit';
       }
-
+    
       public function is_purchasable() {
-        return true;  
+        return true;
       }
-
+    
+      // Add custom fields and data handling methods here
+    }
+    
+    class WC_Product_Packages extends WC_Product_Simple {
+      public function __construct($product) {
+        parent::__construct($product);
+        $this->product_type = 'packages';
+      }
+    
+      public function get_type() {
+        return 'packages';
+      }
+    
+      public function is_purchasable() {
+        return true;
+      }
+    
+      // Add custom fields and data handling methods here
     }
 
-
     add_filter('product_type_selector', 'add_pro_tools_product_type');
-    // add_filter('product_type_options', 'add_pro_tools_product_type');
 
     function add_pro_tools_product_type($types) {
         $types['credit'] = __('Credit', 'woocommerce');
+        $types['packages'] = __('Packages', 'woocommerce');
         return $types;
     }
 
@@ -443,136 +446,104 @@ function check_woocommerce_for_pro_tools_product() {
   
     add_filter('woocommerce_product_supported_types', 'add_pro_tools_product_type_support');
 
+    function install_taxonomy_for_packages_product_unique() {
+      if (!get_term_by('slug', 'packages', 'product_type')) {
+          wp_insert_term('packages', 'product_type');
+      }
+    }
+    register_activation_hook(__FILE__, 'install_taxonomy_for_packages_product_unique');
 
-    /**
- * Adding Custom product type for packages product
- */
-class WC_Product_Packages extends WC_Product_Simple {
-  public function __construct($product) {
-      $this->product_type = 'packages';
-      $this->purchasable = true;
-      $this->downloadable = false;
-      $this->virtual = true;
-      $this->sold_individually = true;
-      $this->manage_stock = false;
-      $this->supports[] = 'ajax_add_to_cart';
-      parent::__construct($product);
-  }
+      /**
+      * Adding package_details field to keep track of package details
+      */
+      function add_package_details_field_unique() {
+        global $product_object;
 
-  public function get_type() {
-      return 'packages';
-  }
+        echo "<div class='options_group show_if_packages'>";
+        woocommerce_wp_text_input(
+            array(
+                'id' => '_package_details',
+                'label' => __('Package Details', 'itbz-pro-tools'),
+                'placeholder' => __('Enter package details', 'itbz-pro-tools'),
+                'desc_tip' => true,
+                'description' => __('Enter the details of the package.', 'your-plugin-textdomain')
+            )
+        );
+        echo "</div>";
+      }
 
-  public function is_purchasable() {
-      return true;
-  }
-}
+    // add_action('woocommerce_product_options_pricing', 'add_package_details_field_unique');
 
-add_filter('product_type_selector', 'add_packages_product_type_unique');
+    // General Tab not showing up
+    add_action('woocommerce_product_options_general_product_data', function () {
+      echo '<div class="options_group show_if_packages clear"></div>';
+    });
 
-function add_packages_product_type_unique($types) {
-  $types['packages'] = __('Packages', 'woocommerce');
-  return $types;
-}
+    // Add show_if_packages class to options_group
+    function enable_product_js_for_packages_product_unique() {
+      global $post, $product_object;
 
-function install_taxonomy_for_packages_product_unique() {
-  if (!get_term_by('slug', 'packages', 'product_type')) {
-      wp_insert_term('packages', 'product_type');
-  }
-}
-register_activation_hook(__FILE__, 'install_taxonomy_for_packages_product_unique');
+      if (!$post) {
+          return;
+      }
 
-/**
-* Adding package_details field to keep track of package details
-*/
-function add_package_details_field_unique() {
-  global $product_object;
+      if ('product' != $post->post_type) :
+          return;
+      endif;
 
-  echo "<div class='options_group show_if_packages'>";
-  woocommerce_wp_text_input(
-      array(
-          'id' => '_package_details',
-          'label' => __('Package Details', 'itbz-pro-tools'),
-          'placeholder' => __('Enter package details', 'itbz-pro-tools'),
-          'desc_tip' => true,
-          'description' => __('Enter the details of the package.', 'your-plugin-textdomain')
-      )
-  );
-  echo "</div>";
-}
+      $is_packages = $product_object && 'packages' === $product_object->get_type() ? true : false;
 
-add_action('woocommerce_product_options_pricing', 'add_package_details_field_unique');
+      ?>
+      <script type='text/javascript'>
+          jQuery(document).ready(function () {
+              // for Price tab
+              jQuery('#general_product_data .pricing').addClass('show_if_packages');
 
-// General Tab not showing up
-add_action('woocommerce_product_options_general_product_data', function () {
-  echo '<div class="options_group show_if_packages clear"></div>';
-});
+              <?php if ($is_packages) { ?>
+              jQuery('#general_product_data .pricing').show();
+              <?php } ?>
+          });
+      </script>
+      <?php
+    }
+    add_action('admin_footer', 'enable_product_js_for_packages_product_unique');
 
-// Add show_if_packages class to options_group
-function enable_product_js_for_packages_product_unique() {
-  global $post, $product_object;
+    // Save the package_details product data
+    function save_custom_product_data_unique($product_id) {
+      if (isset($_POST['_package_details'])) {
+          update_post_meta($product_id, '_package_details', sanitize_text_field($_POST['_package_details']));
+      }
+    }
+    // add_action('woocommerce_process_product_meta', 'save_custom_product_data_unique');
 
-  if (!$post) {
-      return;
-  }
+    // Modify the product data tabs for the 'packages' product type
+    function packages_product_tabs_unique($tabs) {
+      global $post, $product_object;
+      if ($product_object->is_type('packages')) {
+          unset($tabs['shipping']);
+          unset($tabs['attribute']);
+          unset($tabs['advanced']);
+          unset($tabs['linked_product']);
+          unset($tabs['Variations']);
+      }
+      return $tabs;
+    }
+    add_filter('woocommerce_product_data_tabs', 'packages_product_tabs_unique');
 
-  if ('product' != $post->post_type) :
-      return;
-  endif;
+    // add_action('woocommerce_single_product_summary', 'packages_product_front_unique');
 
-  $is_packages = $product_object && 'packages' === $product_object->get_type() ? true : false;
+    function packages_product_front_unique() {
+      global $product;
+      if ('packages' == $product->get_type()) {
+          echo(get_post_meta($product->get_id(), '_package_details', true));
+      }
+    }
 
-  ?>
-  <script type='text/javascript'>
-      jQuery(document).ready(function () {
-          // for Price tab
-          jQuery('#general_product_data .pricing').addClass('show_if_packages');
-
-          <?php if ($is_packages) { ?>
-          jQuery('#general_product_data .pricing').show();
-          <?php } ?>
-      });
-  </script>
-  <?php
-}
-add_action('admin_footer', 'enable_product_js_for_packages_product_unique');
-
-// Save the package_details product data
-function save_custom_product_data_unique($product_id) {
-  if (isset($_POST['_package_details'])) {
-      update_post_meta($product_id, '_package_details', sanitize_text_field($_POST['_package_details']));
-  }
-}
-add_action('woocommerce_process_product_meta', 'save_custom_product_data_unique');
-
-// Modify the product data tabs for the 'packages' product type
-function packages_product_tabs_unique($tabs) {
-  global $post, $product_object;
-  if ($product_object->is_type('packages')) {
-      unset($tabs['shipping']);
-      unset($tabs['attribute']);
-      unset($tabs['advanced']);
-      unset($tabs['linked_product']);
-      unset($tabs['Variations']);
-  }
-  return $tabs;
-}
-add_filter('woocommerce_product_data_tabs', 'packages_product_tabs_unique');
-
-add_action('woocommerce_single_product_summary', 'packages_product_front_unique');
-
-function packages_product_front_unique() {
-  global $product;
-  if ('packages' == $product->get_type()) {
-      echo(get_post_meta($product->get_id(), '_package_details', true));
-  }
-}
-
-function add_pro_tools_product_type_support_unique($product_types) {
-  $product_types[] = 'packages';
-  return $product_types;
-}
-add_filter('woocommerce_product_supported_types', 'add_pro_tools_product_type_support_unique');
+    function add_pro_tools_product_type_support_unique($product_types) {
+      $product_types[] = 'packages';
+      return $product_types;
+    }
+    add_filter('woocommerce_product_supported_types', 'add_pro_tools_product_type_support_unique');
 
   
 
@@ -580,23 +551,47 @@ add_filter('woocommerce_product_supported_types', 'add_pro_tools_product_type_su
 }
 add_action('init', 'check_woocommerce_for_pro_tools_product');
 
+
+// REST API endpoint to get all package products
+add_action('rest_api_init', function () {
+  register_rest_route('pro-tools-fc/v1', '/get_package_products/', array(
+      'methods' => 'GET',
+      'callback' => 'get_package_products_endpoint',
+  ));
+});
+
+// Callback function for the get_package_products REST API endpoint
+function get_package_products_endpoint() {
+  // $user_email = sanitize_email($data['user_email']);
+  $package_products = get_all_package_products();
+
+  return $package_products;
+}
+
 // Function to get all package products with prices
 function get_all_package_products() {
   $args = array(
-      'post_type' => 'product', // Adjust post type based on your setup
-      'meta_query' => array(
-          array(
-              'key' => '_package_product', // Adjust meta key based on your setup
-              'value' => 'yes',
-          ),
-      ),
+    'post_type' => 'product',
+    'product_type' => 'packages',
+    'post_status' => 'publish',
+    'posts_per_page' => -1, // Get all products
   );
 
   $package_products = get_posts($args);
-
   $products_data = array();
 
+  // Add debugging check
+  if (empty($package_products)) {
+      error_log('No package products found matching the query.');
+      // Optional: Add further debugging details here (e.g., $args, current_user_can('edit_posts'))
+  }
+
   foreach ($package_products as $product) {
+  //   echo '<pre>';
+  //   var_dump($product->get_type());
+  // // var_dump($product, get_post_meta($product->ID));
+  // echo '</pre>';
+  
       $product_id = $product->ID;
       $product_data = array(
           'id' => $product_id,
@@ -610,11 +605,18 @@ function get_all_package_products() {
   return $products_data;
 }
 
-// REST API endpoint to get all package products
+
+
+// echo '<pre>';
+// var_dump(get_all_package_products());
+// echo '</pre>';
+// die();
+
+// REST API endpoint to purchase a package product
 add_action('rest_api_init', function () {
-  register_rest_route('pro-tools-fc/v1', '/get_package_products/', array(
-      'methods' => 'GET',
-      'callback' => 'get_package_products_endpoint',
+  register_rest_route('pro-tools-fc/v1', '/purchase_package_product/', array(
+      'methods' => 'POST',
+      'callback' => 'purchase_package_product_endpoint',
       'args' => array(
           'user_email' => array(
               'validate_callback' => function ($param, $request, $key) {
@@ -622,19 +624,22 @@ add_action('rest_api_init', function () {
               },
               'required' => true,
           ),
+          'product_id' => array(
+              'validate_callback' => 'is_numeric',
+              'required' => true,
+          ),
       ),
   ));
 });
 
-// Callback function for the get_package_products REST API endpoint
-function get_package_products_endpoint($data) {
+// Callback function for the purchase_package_product REST API endpoint
+function purchase_package_product_endpoint($data) {
   $user_email = sanitize_email($data['user_email']);
-  $package_products = get_all_package_products();
+  $product_id = intval($data['product_id']);
 
-  return array(
-      'user_email' => $user_email,
-      'package_products' => $package_products,
-  );
+  $purchase_result = purchase_package_product($user_email, $product_id);
+
+  return $purchase_result;
 }
 
 
@@ -674,6 +679,9 @@ function purchase_package_product($user_identifier, $product_id) {
 
               // Update user credits
               update_user_meta($user->ID, '_user_credits', $user_credits - $credit_amount);
+              update_user_meta($user->ID, '_package_name', get_the_title($product_id));
+              update_user_meta($user->ID, '_package_purchase_date', current_time('mysql'));
+              update_user_meta($user->ID, '_package_id', $product_id);
 
               // Add a transaction record for the purchase
               add_credit_transaction($user->user_email, $credit_amount, 'purchase', 'Package Purchase');
@@ -702,36 +710,6 @@ function purchase_package_product($user_identifier, $product_id) {
   }
 }
 
-// REST API endpoint to purchase a package product
-add_action('rest_api_init', function () {
-  register_rest_route('pro-tools-fc/v1', '/purchase_package_product/', array(
-      'methods' => 'POST',
-      'callback' => 'purchase_package_product_endpoint',
-      'args' => array(
-          'user_email' => array(
-              'validate_callback' => function ($param, $request, $key) {
-                  return is_email($param);
-              },
-              'required' => true,
-          ),
-          'product_id' => array(
-              'validate_callback' => 'is_numeric',
-              'required' => true,
-          ),
-      ),
-  ));
-});
-
-// Callback function for the purchase_package_product REST API endpoint
-function purchase_package_product_endpoint($data) {
-  $user_email = sanitize_email($data['user_email']);
-  $product_id = intval($data['product_id']);
-
-  $purchase_result = purchase_package_product($user_email, $product_id);
-
-  return $purchase_result;
-}
-
 
 /**
  * Creating a function which will fire while a order completed
@@ -741,57 +719,55 @@ function purchase_package_product_endpoint($data) {
  */
 
  // Hook to execute when an order is completed
-add_action('woocommerce_order_status_completed', 'record_credit_purchase', 10, 1);
+ add_action('woocommerce_order_status_completed', 'record_credit_purchase', 10, 1);
 
-// Function to record credit purchase transaction
-function record_credit_purchase($order_id) {
-    $order = wc_get_order($order_id);
-
-    // Check if the order is valid and completed
-    if ($order && $order->is_completed()) {
-        // Loop through order items
-        foreach ($order->get_items() as $item_id => $item) {
-            // Get product ID and quantity
-            $product_id = $item->get_product_id();
-            $quantity = $item->get_quantity();
-
-            // Check if the product is a credit product (adjust product type or other conditions as needed)
-            if (is_credit_product($product_id)) {
-                // Add entry to credit transactions table
-                add_credit_transaction($order->get_billing_email(), $quantity, 'purchase');
-                add_user_credits($order->get_billing_email(),  $quantity );
-            }
-        }
-    }
-}
-
-// Function to check if a product is a credit product (modify as needed)
-function is_credit_product($product_id) {
-    $product = wc_get_product($product_id);
-    return $product && $product->is_type('credit');
-}
-
-// Function to add entry to credit transactions table
-function add_credit_transaction($user_email, $credits_amount, $transaction_type) {
-    global $wpdb;
-
-    $table_name = $wpdb->prefix . 'credit_transactions';
-
-    // Insert new transaction record
-    $wpdb->insert(
-        $table_name,
-        array(
-            'user_email' => $user_email,
-            'credits_amount' => $credits_amount,
-            'transaction_date' => current_time('mysql'),
-            'transaction_type' => $transaction_type,
-        ),
-        array('%s', '%d', '%s', '%s')
-    );
-}
-
-
-
+ // Function to record credit purchase transaction
+ function record_credit_purchase($order_id) {
+     $order = wc_get_order($order_id);
+ 
+     // Check if the order is valid and completed
+     if ($order && $order->is_completed()) {
+         // Loop through order items
+         foreach ($order->get_items() as $item_id => $item) {
+             // Get product ID and quantity
+             $product_id = $item->get_product_id();
+             $quantity = $item->get_quantity();
+ 
+             // Check if the product is a credit product (adjust product type or other conditions as needed)
+             if (is_credit_product($product_id)) {
+                 // Add entry to credit transactions table
+                 add_credit_transaction($order->get_billing_email(), $quantity, 'purchase');
+                 add_user_credits($order->get_billing_email(),  $quantity );
+             }
+         }
+     }
+ }
+ 
+ // Function to check if a product is a credit product (modify as needed)
+ function is_credit_product($product_id) {
+     $product = wc_get_product($product_id);
+     return $product && $product->is_type('credit');
+ }
+ 
+ // Function to add entry to credit transactions table
+ function add_credit_transaction($user_email, $credits_amount, $transaction_type) {
+     global $wpdb;
+ 
+     $table_name = $wpdb->prefix . 'credit_transactions';
+ 
+     // Insert new transaction record
+     $wpdb->insert(
+         $table_name,
+         array(
+             'user_email' => $user_email,
+             'credits_amount' => $credits_amount,
+             'transaction_date' => current_time('mysql'),
+             'transaction_type' => $transaction_type,
+         ),
+         array('%s', '%d', '%s', '%s')
+     );
+ }
+ 
 // Function to record credit expenditure transaction
 function record_credit_expenditure($user_email, $credits_amount) {
   GLOBAL $wpdb;
@@ -856,24 +832,24 @@ function add_user_credits($user_email, $credit_amount) {
 
 
 
+
 /**
  * This part will be used in future
  */
 
- function remove_role_and_users($role_name) {
+//  function remove_role_and_users($role_name) {
+//   $users = get_users(array('role' => $role_name));
 
-  // Get all users with the specified role
-  $users = get_users(array('role' => $role_name));
+//   // Delete each user with the role
+//   foreach ($users as $user) {
+//     wp_delete_user($user->ID);
+//   }
 
-  // Delete each user with the role
-  foreach ($users as $user) {
-    wp_delete_user($user->ID);
-  }
+//   // Remove the role itself
+//   remove_role($role_name);
 
-  // Remove the role itself
-  remove_role($role_name);
-
-  echo 'Role ' . $role_name . ' and its users have been removed.';
-}
+//   echo 'Role ' . $role_name . ' and its users have been removed.';
+// }
 
 // remove_role_and_users('exercise_tools_manager');  // the possible calling function 
+ 

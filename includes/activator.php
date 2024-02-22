@@ -1,8 +1,8 @@
 <?php
 
 function itbz_pro_tools_activate() {
-  as_enqueue_async_action( time(), 'create_tools_manager_role' );
-  as_enqueue_async_action( time(), 'create_credit_transactions_table' );
+  // as_enqueue_async_action( time(), 'create_tools_manager_role', [] );
+  // as_enqueue_async_action( time(), 'create_credit_transactions_table', [] );
   
 }
 
