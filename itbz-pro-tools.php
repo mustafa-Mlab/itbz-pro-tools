@@ -583,55 +583,34 @@ add_action('rest_api_init', function () {
 
 // Callback function for the get_package_products REST API endpoint
 function get_package_products_endpoint() {
-  // $user_email = sanitize_email($data['user_email']);
-  $package_products = get_all_package_products();
-
-  return $package_products;
-}
-
-// Function to get all package products with prices
-function get_all_package_products() {
   $args = array(
     'post_type' => 'product',
-    'product_type' => 'packages',
     'post_status' => 'publish',
-    'posts_per_page' => -1, // Get all products
+    'tax_query' => array(
+      array(
+        'taxonomy' => 'product_type',
+        'field' => 'slug',
+        'terms' => array( 'packages' ),
+      ),
+    ),
   );
 
-  $package_products = get_posts($args);
-  $products_data = array();
+  $loop = new WP_Query( $args );
+  $products_data = [];
+  foreach( $loop->posts as $post){
+    // $product = wc_get_product( $post->ID );
+    $product_data = array(
+        'id' => $post->ID,
+        'name' => get_the_title($post->ID),
+        'price' => get_post_meta($post->ID, '_price', true),
+    );
 
-  // Add debugging check
-  if (empty($package_products)) {
-      error_log('No package products found matching the query.');
-      // Optional: Add further debugging details here (e.g., $args, current_user_can('edit_posts'))
-  }
-
-  foreach ($package_products as $product) {
-  //   echo '<pre>';
-  //   var_dump($product->get_type());
-  // // var_dump($product, get_post_meta($product->ID));
-  // echo '</pre>';
-  
-      $product_id = $product->ID;
-      $product_data = array(
-          'id' => $product_id,
-          'name' => get_the_title($product_id),
-          'price' => get_post_meta($product_id, '_price', true),
-      );
-
-      $products_data[] = $product_data;
+    $products_data[] = $product_data;
   }
 
   return $products_data;
+  
 }
-
-
-
-// echo '<pre>';
-// var_dump(get_all_package_products());
-// echo '</pre>';
-// die();
 
 // REST API endpoint to purchase a package product
 add_action('rest_api_init', function () {
