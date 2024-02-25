@@ -342,6 +342,22 @@ function check_woocommerce_for_pro_tools_product() {
 
     add_filter('product_type_selector', 'add_pro_tools_product_type');
 
+    add_filter('woocommerce_get_product_types', function ($product_types) {
+      $product_types['packages'] = __('Packages', 'itbz-access-code-management');
+      $product_types['credit'] = __('Credit', 'itbz-access-code-management');
+      return $product_types;
+    });
+    
+    add_filter('woocommerce_product_object_class', function ($class, $product) {
+      if ($product->get_type() === 'packages') {
+        return 'WC_Product_Packages'; 
+      }
+      if ($product->get_type() === 'credit') {
+        return 'WC_Product_Credit'; 
+      }
+      return $class;
+    }, 10, 2);
+
     function add_pro_tools_product_type($types) {
         $types['credit'] = __('Credit', 'woocommerce');
         $types['packages'] = __('Packages', 'woocommerce');
