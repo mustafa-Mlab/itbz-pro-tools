@@ -52,6 +52,17 @@ define( 'ITBZ_PRO_TOOLS_VERSION', '1.0.1' );
  */
 // define('ITBZ_PRO_TOOLS_TABLE', 'itbz_pro_tools_transactions');
 
+function create_credit_transactions_table_hook(){
+  do_action('create_credit_transactions_table_hook');
+}
+function itbz_check_tools_order_expiration_hook(){
+  do_action('itbz_check_tools_order_expiration_hook');
+}
+
+// Hook your custom function to the custom hook
+add_action('create_tools_manager_role_hook', 'create_tools_manager_role');
+add_action('create_credit_transactions_table_hook', 'create_credit_transactions_table');
+
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/activator.php
