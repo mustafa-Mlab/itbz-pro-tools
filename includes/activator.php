@@ -1,10 +1,8 @@
 <?php
 
 function itbz_pro_tools_activate() {
-  create_tools_manager_role();
-  create_credit_transactions_table();
-  // as_enqueue_async_action( 'create_tools_manager_role_hook', [] );
-  // as_enqueue_async_action( 'create_credit_transactions_table_hook', [] );
+  as_enqueue_async_action( 'create_tools_manager_role_hook' );
+  as_enqueue_async_action( 'create_credit_transactions_table_hook' );
   
 }
 
