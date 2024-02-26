@@ -54,7 +54,7 @@ define( 'ITBZ_PRO_TOOLS_VERSION', '1.0.1' );
 
 
 // Hook your custom function to the custom hook
-add_action('create_tools_manager_role_hook', 'create_tools_manager_role');
+// add_action('create_tools_manager_role_hook', 'create_tools_manager_role');
 add_action('create_credit_transactions_table_hook', 'create_credit_transactions_table');
 
 /**
@@ -77,13 +77,13 @@ function deactivate_itbz_pro_tools() {
  * The code that runs during plugin deletion.
  * This action is documented in includes/deletion.php
  */
-function itbz_pro_tools_uninstall() {
+function itbz_pro_tools_uninstall_for_traning() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/deletion.php';
 }
 
 register_activation_hook( __FILE__, 'activate_itbz_pro_tools' );
 register_deactivation_hook( __FILE__, 'deactivate_itbz_pro_tools' );
-register_uninstall_hook(__FILE__, 'itbz_pro_tools_uninstall');
+register_uninstall_hook(__FILE__, 'itbz_pro_tools_uninstall_for_traning');
 
 // Include necessary WordPress functions
 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -142,9 +142,9 @@ add_action('admin_enqueue_scripts', 'enqueue_itbz_pro_tools_admin_js_css');
 //   }
 // }
 
-  function get_training_db_for_pro_tools(){
-    return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
-  }
+  // function get_training_db_for_pro_tools(){
+  //   return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
+  // }
 
 
   // require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-post-type.php';
@@ -156,48 +156,48 @@ add_action('admin_enqueue_scripts', 'enqueue_itbz_pro_tools_admin_js_css');
 
 
 // Register REST API endpoint for checking pro teacher status
-add_action('rest_api_init', function () {
-  register_rest_route('pro-tools-fc/v1', '/check_pro_teacher_status/', array(
-      'methods' => 'GET',
-      'callback' => 'check_pro_teacher_status_endpoint',
-      'args' => array(
-          'user_email' => array(
-              'validate_callback' => function ($param, $request, $key) {
-                  return is_email($param);
-              },
-              'required' => true,
-          ),
-      ),
-  ));
-});
+// add_action('rest_api_init', function () {
+//   register_rest_route('pro-tools-fc/v1', '/check_pro_teacher_status/', array(
+//       'methods' => 'GET',
+//       'callback' => 'check_pro_teacher_status_endpoint',
+//       'args' => array(
+//           'user_email' => array(
+//               'validate_callback' => function ($param, $request, $key) {
+//                   return is_email($param);
+//               },
+//               'required' => true,
+//           ),
+//       ),
+//   ));
+// });
 
-// Callback function for the pro teacher status REST API endpoint
-function check_pro_teacher_status_endpoint($data) {
-  $user_email = sanitize_email($data['user_email']);
-  $pro_teacher_status = check_if_pro_teachers_callback($user_email);
+// // Callback function for the pro teacher status REST API endpoint
+// function check_pro_teacher_status_endpoint($data) {
+//   $user_email = sanitize_email($data['user_email']);
+//   $pro_teacher_status = check_if_pro_teachers_callback($user_email);
 
-  return array(
-      'user_email' => $user_email,
-      'is_pro_teacher' => $pro_teacher_status,
-  );
-}
+//   return array(
+//       'user_email' => $user_email,
+//       'is_pro_teacher' => $pro_teacher_status,
+//   );
+// }
 
-// Function to check if the user is a pro teacher
-if (!function_exists('check_if_pro_teachers_callback')) {
-  function check_if_pro_teachers_callback($user_email) {
-    $pro_teacher = false;
+// // Function to check if the user is a pro teacher
+// if (!function_exists('check_if_pro_teachers_callback')) {
+//   function check_if_pro_teachers_callback($user_email) {
+//     $pro_teacher = false;
 
-    if (is_plugin_active('wp-fusion/wp-fusion.php')) {
-        $user = get_user_by('email', $user_email);
+//     if (is_plugin_active('wp-fusion/wp-fusion.php')) {
+//         $user = get_user_by('email', $user_email);
         
-        if ($user && in_array('[STATUS] Certified: BRM Pro', wpf_get_tags($user->ID)) || in_array('[STATUS] Eligible: BRM C1 Certification', wpf_get_tags($user->ID))) {
-            $pro_teacher = true;
-        }
-    }
+//         if ($user && in_array('[STATUS] Certified: BRM Pro', wpf_get_tags($user->ID)) || in_array('[STATUS] Eligible: BRM C1 Certification', wpf_get_tags($user->ID))) {
+//             $pro_teacher = true;
+//         }
+//     }
 
-    return $pro_teacher;
-  }
-}
+//     return $pro_teacher;
+//   }
+// }
 
 
 /**
@@ -206,65 +206,65 @@ if (!function_exists('check_if_pro_teachers_callback')) {
  * @return bool 
  */
 
-if (!function_exists('check_if_pro_teachers')) {
-  function check_if_pro_teachers(){
-    $pro_teacher = false;
-    if (is_plugin_active('wp-fusion/wp-fusion.php')) {
-      if (is_user_logged_in()) {
-        // $user_id = get_current_user_id();
-        $tags = wpf_get_tags();
-        if(in_array('[STATUS] Certified: BRM Pro', $tags) || in_array('[STATUS] Eligible: BRM C1 Certification', $tags)){
-          $pro_teacher = true;
-        }
-      }
-      else{
-        wp_redirect(home_url());
-        exit();
-      }
-      return $pro_teacher;
-    }
+// if (!function_exists('check_if_pro_teachers')) {
+//   function check_if_pro_teachers(){
+//     $pro_teacher = false;
+//     if (is_plugin_active('wp-fusion/wp-fusion.php')) {
+//       if (is_user_logged_in()) {
+//         // $user_id = get_current_user_id();
+//         $tags = wpf_get_tags();
+//         if(in_array('[STATUS] Certified: BRM Pro', $tags) || in_array('[STATUS] Eligible: BRM C1 Certification', $tags)){
+//           $pro_teacher = true;
+//         }
+//       }
+//       else{
+//         wp_redirect(home_url());
+//         exit();
+//       }
+//       return $pro_teacher;
+//     }
     
-  }
-}
+//   }
+// }
 
 // Register REST API endpoint for checking tools manager status
-add_action('rest_api_init', function () {
-  register_rest_route('pro-tools-fc/v1', '/check_tools_manager_status/', array(
-      'methods' => 'GET',
-      'callback' => 'check_tools_manager_status_endpoint',
-      'args' => array(
-          'user_email' => array(
-              'validate_callback' => function ($param, $request, $key) {
-                  return is_email($param);
-              },
-              'required' => true,
-          ),
-      ),
-  ));
-});
+// add_action('rest_api_init', function () {
+//   register_rest_route('pro-tools-fc/v1', '/check_tools_manager_status/', array(
+//       'methods' => 'GET',
+//       'callback' => 'check_tools_manager_status_endpoint',
+//       'args' => array(
+//           'user_email' => array(
+//               'validate_callback' => function ($param, $request, $key) {
+//                   return is_email($param);
+//               },
+//               'required' => true,
+//           ),
+//       ),
+//   ));
+// });
 
-// Callback function for the tools manager status REST API endpoint
-function check_tools_manager_status_endpoint($data) {
-  $user_email = sanitize_email($data['user_email']);
-  $tools_manager_status = if_tools_manager_callback($user_email);
+// // Callback function for the tools manager status REST API endpoint
+// function check_tools_manager_status_endpoint($data) {
+//   $user_email = sanitize_email($data['user_email']);
+//   $tools_manager_status = if_tools_manager_callback($user_email);
 
-  return $tools_manager_status;
-}
+//   return $tools_manager_status;
+// }
 
-// Function to check if the user is a tools manager
-if (!function_exists('if_tools_manager_callback')) {
-  function if_tools_manager_callback($user_email) {
-    $is_tools_manager = false;
+// // Function to check if the user is a tools manager
+// if (!function_exists('if_tools_manager_callback')) {
+//   function if_tools_manager_callback($user_email) {
+//     $is_tools_manager = false;
 
-    $user = get_user_by('email', $user_email);
+//     $user = get_user_by('email', $user_email);
 
-    if ($user && in_array('tools_manager', (array) $user->roles)) {
-        $is_tools_manager = true;
-    }
+//     if ($user && in_array('tools_manager', (array) $user->roles)) {
+//         $is_tools_manager = true;
+//     }
 
-    return $is_tools_manager;
-  }
-}
+//     return $is_tools_manager;
+//   }
+// }
 
 
 /**
@@ -273,35 +273,35 @@ if (!function_exists('if_tools_manager_callback')) {
  * @return bool 
  */
 
- if (!function_exists('if_tools_manager')) {
-  function if_tools_manager() {
-    global $current_user;
-    $user_id = get_current_user_id();
-    if ( in_array( 'tools_manager', (array) $current_user->roles ) ) {
-      return true; 
-    } else {
-      return false; 
-    }
-  }
-}
+//  if (!function_exists('if_tools_manager')) {
+//   function if_tools_manager() {
+//     global $current_user;
+//     $user_id = get_current_user_id();
+//     if ( in_array( 'tools_manager', (array) $current_user->roles ) ) {
+//       return true; 
+//     } else {
+//       return false; 
+//     }
+//   }
+// }
 
 // Redirect Tools managers to home page while login
-function redirect_tools_manager() {
-  if ( if_tools_manager() && !is_admin() ) {
-    wp_redirect( home_url() );
-    exit;
-  }
-}
+// function redirect_tools_manager() {
+//   if ( if_tools_manager() && !is_admin() ) {
+//     wp_redirect( home_url() );
+//     exit;
+//   }
+// }
 
-// Prevent Tools manager to login on admin panel
-add_action( 'login_redirect', 'redirect_tools_manager' );
-function prevent_tools_manager_admin_access() {
-  if ( if_tools_manager() && is_admin() ) {
-    wp_redirect( home_url() );
-    exit;
-  }
-}
-add_action( 'admin_init', 'prevent_tools_manager_admin_access' );
+// // Prevent Tools manager to login on admin panel
+// add_action( 'login_redirect', 'redirect_tools_manager' );
+// function prevent_tools_manager_admin_access() {
+//   if ( if_tools_manager() && is_admin() ) {
+//     wp_redirect( home_url() );
+//     exit;
+//   }
+// }
+// add_action( 'admin_init', 'prevent_tools_manager_admin_access' );
 
 
 // Ensure WooCommerce is loaded

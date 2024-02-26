@@ -1,7 +1,7 @@
 <?php
 
 function itbz_pro_tools_activate() {
-  as_enqueue_async_action( 'create_tools_manager_role_hook' );
+  // as_enqueue_async_action( 'create_tools_manager_role_hook' );
   as_enqueue_async_action( 'create_credit_transactions_table_hook' );
   
 }
