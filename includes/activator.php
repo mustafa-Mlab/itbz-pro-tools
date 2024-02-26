@@ -1,8 +1,9 @@
 <?php
 
 function itbz_pro_tools_activate() {
+  create_credit_transactions_table();
   // as_enqueue_async_action( 'create_tools_manager_role_hook' );
-  as_enqueue_async_action( 'create_credit_transactions_table_hook' );
+  // as_enqueue_async_action( 'create_credit_transactions_table_hook' );
   
 }
 
@@ -32,7 +33,8 @@ function create_tools_manager_role() {
 function create_credit_transactions_table() {
   global $wpdb;
 
-  $table_name = $wpdb->prefix . 'credit_transactions';
+  // $table_name = $wpdb->prefix . 'credit_transactions';
+  $table_name = $wpdb->prefix . 'itbz_pro_tools_credit_transactions';
 
   $charset_collate = $wpdb->get_charset_collate();
 
@@ -41,7 +43,7 @@ function create_credit_transactions_table() {
       user_email varchar(100) NOT NULL,
       credits_amount int NOT NULL,
       transaction_date datetime NOT NULL,
-      transaction_type varchar(20) NOT NULL,  -- 'purchased' or 'used'
+      transaction_type varchar(20) NOT NULL, 
       PRIMARY KEY  (transaction_id)
   ) $charset_collate;";
 
