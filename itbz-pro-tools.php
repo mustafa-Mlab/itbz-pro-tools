@@ -55,22 +55,22 @@ define( 'ITBZ_PRO_TOOLS_VERSION', '1.0.1' );
 
 // Hook your custom function to the custom hook
 // add_action('create_tools_manager_role_hook', 'create_tools_manager_role');
-add_action('create_credit_transactions_table_hook', function(){
-  global $wpdb;
-  $table_name = $wpdb->prefix . 'itbz_pro_tools_credit_transactions';
-  $charset_collate = $wpdb->get_charset_collate();
-  $sql = "CREATE TABLE $table_name (
-      transaction_id bigint(20) NOT NULL AUTO_INCREMENT,
-      user_email varchar(100) NOT NULL,
-      credits_amount int NOT NULL,
-      transaction_date datetime NOT NULL,
-      transaction_type varchar(20) NOT NULL, 
-      PRIMARY KEY  (transaction_id)
-  ) $charset_collate;";
+// add_action('create_credit_transactions_table_hook', function(){
+//   global $wpdb;
+//   $table_name = $wpdb->prefix . 'itbz_pro_tools_credit_transactions';
+//   $charset_collate = $wpdb->get_charset_collate();
+//   $sql = "CREATE TABLE $table_name (
+//       transaction_id bigint(20) NOT NULL AUTO_INCREMENT,
+//       user_email varchar(100) NOT NULL,
+//       credits_amount int NOT NULL,
+//       transaction_date datetime NOT NULL,
+//       transaction_type varchar(20) NOT NULL, 
+//       PRIMARY KEY  (transaction_id)
+//   ) $charset_collate;";
 
-  require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-  dbDelta($sql);
-});
+//   require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+//   dbDelta($sql);
+// });
 
 /**
  * The code that runs during plugin activation.
@@ -663,7 +663,7 @@ function purchase_package_product($user_identifier, $product_id) {
               update_user_meta($user->ID, '_package_id', $product_id);
 
               // Add a transaction record for the purchase
-              add_credit_transaction($user->user_email, $credit_amount, 'Package purchase');
+              itbz_pro_tools_add_credit_transaction($user->user_email, $credit_amount, 'Package purchase');
 
               return array(
                   'success' => true,
@@ -715,8 +715,8 @@ function purchase_package_product($user_identifier, $product_id) {
              // Check if the product is a credit product (adjust product type or other conditions as needed)
              if (is_credit_product($product_id)) {
                  // Add entry to credit transactions table
-                 add_credit_transaction($order->get_billing_email(), $quantity, 'purchase');
-                 add_user_credits($order->get_billing_email(),  $quantity );
+                 itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $quantity, 'purchase');
+                 itbz_pro_tools_add_user_credits($order->get_billing_email(),  $quantity );
              }
          }
      }
@@ -729,7 +729,7 @@ function purchase_package_product($user_identifier, $product_id) {
  }
  
  // Function to add entry to credit transactions table
- function add_credit_transaction($user_email, $credits_amount, $transaction_type) {
+ function itbz_pro_tools_add_credit_transaction($user_email, $credits_amount, $transaction_type) {
      global $wpdb;
  
      $table_name = $wpdb->prefix . 'itbz_pro_tools_credit_transactions';
@@ -789,7 +789,7 @@ function subtract_user_credits($user_email, $credit_amount) {
 }
 
 // Function to add user credits
-function add_user_credits($user_email, $credit_amount) {
+function itbz_pro_tools_add_user_credits($user_email, $credit_amount) {
   $user = get_user_by('email', $user_email);
 
   if ($user) {
