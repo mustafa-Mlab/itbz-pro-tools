@@ -124,50 +124,14 @@ function enqueue_itbz_pro_tools_admin_js_css() {
   wp_enqueue_script('jquery');
 
   wp_enqueue_script('pro-tools-admin', ITBZ_PRO_TOOLS_DIR_URL . 'assets/admin-part.js' , array('jquery'), '1.0', true);
-
-  // wp_enqueue_script('dataTables', 'https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js', array('jquery'), '1.10.24', true);
-  // wp_enqueue_style('dataTables-css', 'https://cdn.datatables.net/1.10.24/css/jquery.dataTables.min.css');
 }
 add_action('admin_enqueue_scripts', 'enqueue_itbz_pro_tools_admin_js_css');
 
-
-// function thelog($message) {
-//   // Define the log file path
-//   $log_file = WP_CONTENT_DIR . '/custom-log.txt';
-
-//   // Create or open the log file for appending
-//   $file_handle = fopen($log_file, 'a');
-
-//   // Check if the file was opened successfully
-//   if ($file_handle) {
-//       // Create a timestamp
-//       $timestamp = date('Y-m-d H:i:s');
-
-//       // Format the log message with timestamp
-//       $log_message = "[$timestamp] $message\n";
-
-//       // Write the log message to the file
-//       fwrite($file_handle, $log_message);
-
-//       // Close the file
-//       fclose($file_handle);
-//   } else {
-//       // Handle any errors, e.g., unable to open the file
-//       error_log("Failed to open or create the log file: $log_file");
-//   }
-// }
 
   // function get_training_db_for_pro_tools(){
   //   return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
   // }
 
-
-  // require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-post-type.php';
-// require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-taxonomy.php';
-// require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-page-meta-field.php';
-// require_once plugin_dir_path( __FILE__ ) . 'includes/pro-tools-meta-fields.php';
-// require_once plugin_dir_path( __FILE__ ) . 'includes/admin-screens.php';
-// require_once plugin_dir_path( __FILE__ ) . 'includes/client-screens.php';
 
 
 // Register REST API endpoint for checking pro teacher status
@@ -699,7 +663,7 @@ function purchase_package_product($user_identifier, $product_id) {
               update_user_meta($user->ID, '_package_id', $product_id);
 
               // Add a transaction record for the purchase
-              add_credit_transaction($user->user_email, $credit_amount, 'purchase', 'Package Purchase');
+              add_credit_transaction($user->user_email, $credit_amount, 'Package purchase');
 
               return array(
                   'success' => true,
