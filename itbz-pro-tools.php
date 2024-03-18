@@ -612,9 +612,9 @@ add_action('rest_api_init', function () {
 });
 
 // Callback function for the purchase_package_product REST API endpoint
-function purchase_package_product_endpoint($data) {
-  $user_email = sanitize_email($data['user_email']);
-  $product_id = intval($data['product_id']);
+function purchase_package_product_endpoint( WP_REST_Request $request ) {
+  $user_email = sanitize_email($request->get_param('user_email'));
+  $product_id = intval($request->get_param('product_id'));
 
   $purchase_result = purchase_package_product($user_email, $product_id);
 
@@ -636,57 +636,153 @@ function purchase_package_product($user_identifier, $product_id) {
   }
 
   if ($user) {
-      $product = wc_get_product($product_id);
+    $product = wc_get_product($product_id);
+  
+    // Check if the product is a package product
+    $product_type = wp_get_post_terms($product_id, 'product_type');
+    
+    if ($product && $product_type[0]->slug == 'packages') {
+      $package_name = get_the_title($product_id);
+      $credit_amount = $product->get_price(); // Assuming the price is the credit amount
 
-      // Check if the product is a package product
-      if ($product && get_post_meta($product_id, '_package_product', true) === 'yes') {
-          $credit_amount = $product->get_price(); // Assuming the price is the credit amount
+      // Check if the user has enough credits
+      $user_credits = itbz_pro_tools_get_remaining_credits( $user->user_email); 
+    
+      // get_user_meta($user->ID, '_user_credits', true);
 
-          // Check if the user has enough credits
-          $user_credits = get_user_meta($user->ID, '_user_credits', true);
+      if ($user_credits >= $credit_amount) {
+        // Create an order for the package product
 
-          if ($user_credits >= $credit_amount) {
-              // Create an order for the package product
-              $order = wc_create_order(array(
-                  'customer_id' => $user->ID,
-                  'status' => 'completed',
-              ));
-
-              $order->add_product($product, 1); // Assuming quantity is 1
-              $order->set_total(0); // Set the order total to zero
-              $order->calculate_totals();
-
-              // Update user credits
-              update_user_meta($user->ID, '_user_credits', $user_credits - $credit_amount);
-              update_user_meta($user->ID, '_package_name', get_the_title($product_id));
-              update_user_meta($user->ID, '_package_purchase_date', current_time('mysql'));
-              update_user_meta($user->ID, '_package_id', $product_id);
-
-              // Add a transaction record for the purchase
-              itbz_pro_tools_add_credit_transaction($user->user_email, $credit_amount, 'Package purchase');
-
-              return array(
-                  'success' => true,
-                  'message' => 'Package purchased successfully!',
-              );
-          } else {
-              return array(
-                  'success' => false,
-                  'message' => 'Insufficient credits to purchase the package.',
-              );
-          }
-      } else {
+        if ( ! function_exists( 'wc_create_order' ) ) {
+          require_once( ABSPATH . 'wp-content/plugins/woocommerce/includes/wc-core-functions.php' );
+        }
+        $order = wc_create_order();
+        $order->set_customer_id( $user->ID );
+        $order->add_product( $product );
+        $order->set_total( 0 );
+        $order_id = $order->save();
+        
+        if($order_id){
+          $newEntry = itbz_pro_tools_insert_package_tracking_entry( $user_identifier, $product_id, $order_id );
+          $creditTransection = itbz_pro_tools_add_credit_transaction($user->user_email, $credit_amount, 'purchase', $order->ID );
+          
           return array(
-              'success' => false,
-              'message' => 'Invalid package product.',
+              'success' => true,
+              'message' => 'Package purchased successfully!',
           );
+        }
+        else{
+          return array(
+            'success' => false,
+            'message' => 'Order place failed',
+          );
+        }
+
+      } else {
+        return array(
+          'success' => false,
+          'message' => 'Insufficient credits to purchase the package.',
+        );
       }
+    } else {
+      return array(
+        'success' => false,
+        'message' => 'Invalid package product.',
+      );
+    }
   } else {
       return array(
           'success' => false,
           'message' => 'User not found.',
       );
   }
+}
+
+function itbz_pro_tools_insert_package_tracking_entry($user_email, $package_id, $order_id) {
+  global $wpdb;
+  $table_name = $wpdb->prefix . 'itbz_pro_tools_package_track';
+
+  $today = date('Y-m-d'); 
+  $package_exp_date = date('Y-m-d', strtotime('+1 year', strtotime($today)));
+  $success = $wpdb->insert(
+    $table_name,
+    array(
+      'user_email' => $user_email,
+      'package_id' => $package_id,
+      'package_exp_date' => $package_exp_date,
+      'order_id' => $order_id,
+      'package_status' => 1
+    ),
+    array(
+      '%s',
+      '%d',
+      '%s',
+      '%d',
+      '%d',
+    )
+  );
+
+  if ( $success !== false ) {
+    return $wpdb->insert_id; 
+  } else {
+    return false; 
+  }
+}
+
+function itbz_pro_tools_update_package_tracking_entry( $user_email = null, $package_id = null, $package_exp_date = null, $status = null) {
+  global $wpdb;
+  $table_name = $wpdb->prefix . 'itbz_pro_tools_package_track';
+
+  $data = array();
+
+  if ( !empty($user_email) ) {
+    $data['user_email'] = $user_email;
+  }
+  if ( !empty($package_id) ) {
+    $data['package_id'] = $package_id;
+  }
+  if ( !empty($package_exp_date) ) {
+    $data['package_exp_date'] = $package_exp_date;
+  }
+  if ( !empty($status) ) {
+    $data['status'] = $status;
+  }
+
+  $format = array();
+  foreach ( $data as $key => $value ) {
+    $format[] = "%s => $key";
+  }
+
+  $formatted_data = implode( ', ', $format );
+
+  $where = array( 'id' => $id );
+
+  $success = $wpdb->update( $table_name, $data, $where, $formatted_data, $format );
+
+  return $success !== false; 
+}
+
+
+function delete_package_tracking_entry($id) {
+  global $wpdb;
+  $table_name = $wpdb->prefix . 'itbz_pro_tools_package_track';
+
+  $where = array( 'id' => $id );
+
+  $success = $wpdb->delete( $table_name, $where, $format = array( '%d' ) );
+
+  return $success !== false; // Return true on success, false on failure
+}
+
+
+function itbz_pro_tools_get_package_tracking_entries($user_email) {
+  global $wpdb;
+  $table_name = $wpdb->prefix . 'itbz_pro_tools_package_track';
+
+  $sql = "SELECT * FROM $table_name WHERE user_email='" . $user_email . "' AND package_status=1";
+  $results = $wpdb->get_results( $sql );
+
+  return $results;
 }
 
 
@@ -705,7 +801,7 @@ function purchase_package_product($user_identifier, $product_id) {
      $order = wc_get_order($order_id);
  
      // Check if the order is valid and completed
-     if ($order && $order->is_completed()) {
+     if ($order) {
          // Loop through order items
          foreach ($order->get_items() as $item_id => $item) {
              // Get product ID and quantity
@@ -715,7 +811,7 @@ function purchase_package_product($user_identifier, $product_id) {
              // Check if the product is a credit product (adjust product type or other conditions as needed)
              if (is_credit_product($product_id)) {
                  // Add entry to credit transactions table
-                 itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $quantity, 'purchase');
+                 itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $quantity, 'purchase', $order->ID);
                  itbz_pro_tools_add_user_credits($order->get_billing_email(),  $quantity );
              }
          }
@@ -728,89 +824,6 @@ function purchase_package_product($user_identifier, $product_id) {
      return $product && $product->is_type('credit');
  }
  
- // Function to add entry to credit transactions table
- function itbz_pro_tools_add_credit_transaction($user_email, $credits_amount, $transaction_type) {
-     global $wpdb;
- 
-     $table_name = $wpdb->prefix . 'itbz_pro_tools_credit_transactions';
- 
-     // Insert new transaction record
-     $wpdb->insert(
-         $table_name,
-         array(
-             'user_email' => $user_email,
-             'credits_amount' => $credits_amount,
-             'transaction_date' => current_time('mysql'),
-             'transaction_type' => $transaction_type,
-         ),
-         array('%s', '%d', '%s', '%s')
-     );
- }
- 
-// Function to record credit expenditure transaction
-function record_credit_expenditure($user_email, $credits_amount) {
-  GLOBAL $wpdb;
-
-  $table_name = $wpdb->prefix . 'itbz_pro_tools_credit_transactions';
-
-  // Insert new expenditure transaction record
-  $wpdb->insert(
-      $table_name,
-      array(
-          'user_email' => $user_email,
-          'credits_amount' => -$credits_amount, // Negative value for expenditure
-          'transaction_date' => current_time('mysql'),
-          'transaction_type' => 'expenditure',
-      ),
-      array('%s', '%d', '%s', '%s')
-  );
-  subtract_user_credits($user_email, $credits_amount );
-}
-
-
-// Function to subtract user credits
-function subtract_user_credits($user_email, $credit_amount) {
-  $user = get_user_by('email', $user_email);
-
-  if ($user) {
-      $user_credits = get_user_meta($user->ID, '_user_credits', true);
-
-      // If user_credits meta doesn't exist, create it
-      if ($user_credits === '') {
-          add_user_meta($user->ID, '_user_credits', 0);
-      } else {
-          update_user_meta($user->ID, '_user_credits', max(0, $user_credits - $credit_amount));
-      }
-
-      return true;
-  } else {
-      return false;
-  }
-}
-
-// Function to add user credits
-function itbz_pro_tools_add_user_credits($user_email, $credit_amount) {
-  $user = get_user_by('email', $user_email);
-
-  if ($user) {
-      $user_credits = get_user_meta($user->ID, '_user_credits', true);
-
-      // If user_credits meta doesn't exist, create it
-      if ($user_credits === '') {
-          add_user_meta($user->ID, '_user_credits', $credit_amount);
-      } else {
-          update_user_meta($user->ID, '_user_credits', $user_credits + $credit_amount);
-      }
-
-      return true;
-  } else {
-      return false;
-  }
-}
-
-
-
-
 
 /**
  * This part will be used in future
