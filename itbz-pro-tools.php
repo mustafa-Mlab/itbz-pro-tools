@@ -52,26 +52,6 @@ define( 'ITBZ_PRO_TOOLS_VERSION', '1.0.1' );
  */
 // define('ITBZ_PRO_TOOLS_TABLE', 'itbz_pro_tools_transactions');
 
-
-// Hook your custom function to the custom hook
-// add_action('create_tools_manager_role_hook', 'create_tools_manager_role');
-// add_action('create_credit_transactions_table_hook', function(){
-//   global $wpdb;
-//   $table_name = $wpdb->prefix . 'itbz_pro_tools_credit_transactions';
-//   $charset_collate = $wpdb->get_charset_collate();
-//   $sql = "CREATE TABLE $table_name (
-//       transaction_id bigint(20) NOT NULL AUTO_INCREMENT,
-//       user_email varchar(100) NOT NULL,
-//       credits_amount int NOT NULL,
-//       transaction_date datetime NOT NULL,
-//       transaction_type varchar(20) NOT NULL, 
-//       PRIMARY KEY  (transaction_id)
-//   ) $charset_collate;";
-
-//   require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-//   dbDelta($sql);
-// });
-
 /**
  * The code that runs during plugin activation.
  * This action is documented in includes/activator.php
@@ -128,141 +108,11 @@ function enqueue_itbz_pro_tools_admin_js_css() {
 add_action('admin_enqueue_scripts', 'enqueue_itbz_pro_tools_admin_js_css');
 
 
-  // function get_training_db_for_pro_tools(){
-  //   return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
-  // }
-
-
-
-// Register REST API endpoint for checking pro teacher status
-// add_action('rest_api_init', function () {
-//   register_rest_route('pro-tools-fc/v1', '/check_pro_teacher_status/', array(
-//       'methods' => 'GET',
-//       'callback' => 'check_pro_teacher_status_endpoint',
-//       'args' => array(
-//           'user_email' => array(
-//               'validate_callback' => function ($param, $request, $key) {
-//                   return is_email($param);
-//               },
-//               'required' => true,
-//           ),
-//       ),
-//   ));
-// });
-
-// // Callback function for the pro teacher status REST API endpoint
-// function check_pro_teacher_status_endpoint($data) {
-//   $user_email = sanitize_email($data['user_email']);
-//   $pro_teacher_status = check_if_pro_teachers_callback($user_email);
-
-//   return array(
-//       'user_email' => $user_email,
-//       'is_pro_teacher' => $pro_teacher_status,
-//   );
-// }
-
-// // Function to check if the user is a pro teacher
-// if (!function_exists('check_if_pro_teachers_callback')) {
-//   function check_if_pro_teachers_callback($user_email) {
-//     $pro_teacher = false;
-
-//     if (is_plugin_active('wp-fusion/wp-fusion.php')) {
-//         $user = get_user_by('email', $user_email);
-        
-//         if ($user && in_array('[STATUS] Certified: BRM Pro', wpf_get_tags($user->ID)) || in_array('[STATUS] Eligible: BRM C1 Certification', wpf_get_tags($user->ID))) {
-//             $pro_teacher = true;
-//         }
-//     }
-
-//     return $pro_teacher;
-//   }
+// function get_training_db_for_pro_tools(){
+//   return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
 // }
 
 
-/**
- * A helper function to find out is the logged in user is a Pro teacher or not
- * @param void
- * @return bool 
- */
-
-// if (!function_exists('check_if_pro_teachers')) {
-//   function check_if_pro_teachers(){
-//     $pro_teacher = false;
-//     if (is_plugin_active('wp-fusion/wp-fusion.php')) {
-//       if (is_user_logged_in()) {
-//         // $user_id = get_current_user_id();
-//         $tags = wpf_get_tags();
-//         if(in_array('[STATUS] Certified: BRM Pro', $tags) || in_array('[STATUS] Eligible: BRM C1 Certification', $tags)){
-//           $pro_teacher = true;
-//         }
-//       }
-//       else{
-//         wp_redirect(home_url());
-//         exit();
-//       }
-//       return $pro_teacher;
-//     }
-    
-//   }
-// }
-
-// Register REST API endpoint for checking tools manager status
-// add_action('rest_api_init', function () {
-//   register_rest_route('pro-tools-fc/v1', '/check_tools_manager_status/', array(
-//       'methods' => 'GET',
-//       'callback' => 'check_tools_manager_status_endpoint',
-//       'args' => array(
-//           'user_email' => array(
-//               'validate_callback' => function ($param, $request, $key) {
-//                   return is_email($param);
-//               },
-//               'required' => true,
-//           ),
-//       ),
-//   ));
-// });
-
-// // Callback function for the tools manager status REST API endpoint
-// function check_tools_manager_status_endpoint($data) {
-//   $user_email = sanitize_email($data['user_email']);
-//   $tools_manager_status = if_tools_manager_callback($user_email);
-
-//   return $tools_manager_status;
-// }
-
-// // Function to check if the user is a tools manager
-// if (!function_exists('if_tools_manager_callback')) {
-//   function if_tools_manager_callback($user_email) {
-//     $is_tools_manager = false;
-
-//     $user = get_user_by('email', $user_email);
-
-//     if ($user && in_array('tools_manager', (array) $user->roles)) {
-//         $is_tools_manager = true;
-//     }
-
-//     return $is_tools_manager;
-//   }
-// }
-
-
-/**
- * A helper function to find out is the logged in user is a tools managet or not
- * @param void
- * @return bool 
- */
-
-//  if (!function_exists('if_tools_manager')) {
-//   function if_tools_manager() {
-//     global $current_user;
-//     $user_id = get_current_user_id();
-//     if ( in_array( 'tools_manager', (array) $current_user->roles ) ) {
-//       return true; 
-//     } else {
-//       return false; 
-//     }
-//   }
-// }
 
 // Redirect Tools managers to home page while login
 // function redirect_tools_manager() {
@@ -429,7 +279,6 @@ function check_woocommerce_for_pro_tools_product() {
     
     add_filter('woocommerce_product_data_tabs', 'credit_product_tabs');
 
-    
     add_action( 'woocommerce_single_product_summary', 'credit_product_front' );
 
     // function credit_product_front () {
@@ -553,6 +402,7 @@ add_action('init', 'check_woocommerce_for_pro_tools_product');
 
 
 // REST API endpoint to get all package products
+/** this API will be called from Traning site while packagelist needed. */
 add_action('rest_api_init', function () {
   register_rest_route('pro-tools-fc/v1', '/get_package_products/', array(
       'methods' => 'GET',
@@ -591,199 +441,7 @@ function get_package_products_endpoint() {
   
 }
 
-// REST API endpoint to purchase a package product
-add_action('rest_api_init', function () {
-  register_rest_route('pro-tools-fc/v1', '/purchase_package_product/', array(
-      'methods' => 'POST',
-      'callback' => 'purchase_package_product_endpoint',
-      'args' => array(
-          'user_email' => array(
-              'validate_callback' => function ($param, $request, $key) {
-                  return is_email($param);
-              },
-              'required' => true,
-          ),
-          'product_id' => array(
-              'validate_callback' => 'is_numeric',
-              'required' => true,
-          ),
-      ),
-  ));
-});
 
-// Callback function for the purchase_package_product REST API endpoint
-function purchase_package_product_endpoint( WP_REST_Request $request ) {
-  $user_email = sanitize_email($request->get_param('user_email'));
-  $product_id = intval($request->get_param('product_id'));
-
-  $purchase_result = purchase_package_product($user_email, $product_id);
-
-  return $purchase_result;
-}
-
-
-// Function to purchase a package product
-function purchase_package_product($user_identifier, $product_id) {
-  // Check if the function is called through the API or from inside the site
-  $is_api_call = strpos($_SERVER['REQUEST_URI'], '/wp-json/pro-tools-fc/v1/') !== false;
-
-  if ($is_api_call) {
-      // If called through API, get user by email
-      $user = get_user_by('email', $user_identifier);
-  } else {
-      // If called from inside the site, check the current user
-      $user = is_user_logged_in() ? wp_get_current_user() : null;
-  }
-
-  if ($user) {
-    $product = wc_get_product($product_id);
-  
-    // Check if the product is a package product
-    $product_type = wp_get_post_terms($product_id, 'product_type');
-    
-    if ($product && $product_type[0]->slug == 'packages') {
-      $package_name = get_the_title($product_id);
-      $credit_amount = $product->get_price(); // Assuming the price is the credit amount
-
-      // Check if the user has enough credits
-      $user_credits = itbz_pro_tools_get_remaining_credits( $user->user_email); 
-    
-      // get_user_meta($user->ID, '_user_credits', true);
-
-      if ($user_credits >= $credit_amount) {
-        // Create an order for the package product
-
-        if ( ! function_exists( 'wc_create_order' ) ) {
-          require_once( ABSPATH . 'wp-content/plugins/woocommerce/includes/wc-core-functions.php' );
-        }
-        $order = wc_create_order();
-        $order->set_customer_id( $user->ID );
-        $order->add_product( $product );
-        $order->set_total( 0 );
-        $order_id = $order->save();
-        
-        if($order_id){
-          $newEntry = itbz_pro_tools_insert_package_tracking_entry( $user_identifier, $product_id, $order_id );
-          $creditTransection = itbz_pro_tools_add_credit_transaction($user->user_email, $credit_amount, 'purchase', $order->ID );
-          
-          return array(
-              'success' => true,
-              'message' => 'Package purchased successfully!',
-          );
-        }
-        else{
-          return array(
-            'success' => false,
-            'message' => 'Order place failed',
-          );
-        }
-
-      } else {
-        return array(
-          'success' => false,
-          'message' => 'Insufficient credits to purchase the package.',
-        );
-      }
-    } else {
-      return array(
-        'success' => false,
-        'message' => 'Invalid package product.',
-      );
-    }
-  } else {
-      return array(
-          'success' => false,
-          'message' => 'User not found.',
-      );
-  }
-}
-
-function itbz_pro_tools_insert_package_tracking_entry($user_email, $package_id, $order_id) {
-  global $wpdb;
-  $table_name = $wpdb->prefix . 'itbz_pro_tools_package_track';
-
-  $today = date('Y-m-d'); 
-  $package_exp_date = date('Y-m-d', strtotime('+1 year', strtotime($today)));
-  $success = $wpdb->insert(
-    $table_name,
-    array(
-      'user_email' => $user_email,
-      'package_id' => $package_id,
-      'package_exp_date' => $package_exp_date,
-      'order_id' => $order_id,
-      'package_status' => 1
-    ),
-    array(
-      '%s',
-      '%d',
-      '%s',
-      '%d',
-      '%d',
-    )
-  );
-
-  if ( $success !== false ) {
-    return $wpdb->insert_id; 
-  } else {
-    return false; 
-  }
-}
-
-function itbz_pro_tools_update_package_tracking_entry( $user_email = null, $package_id = null, $package_exp_date = null, $status = null) {
-  global $wpdb;
-  $table_name = $wpdb->prefix . 'itbz_pro_tools_package_track';
-
-  $data = array();
-
-  if ( !empty($user_email) ) {
-    $data['user_email'] = $user_email;
-  }
-  if ( !empty($package_id) ) {
-    $data['package_id'] = $package_id;
-  }
-  if ( !empty($package_exp_date) ) {
-    $data['package_exp_date'] = $package_exp_date;
-  }
-  if ( !empty($status) ) {
-    $data['status'] = $status;
-  }
-
-  $format = array();
-  foreach ( $data as $key => $value ) {
-    $format[] = "%s => $key";
-  }
-
-  $formatted_data = implode( ', ', $format );
-
-  $where = array( 'id' => $id );
-
-  $success = $wpdb->update( $table_name, $data, $where, $formatted_data, $format );
-
-  return $success !== false; 
-}
-
-
-function delete_package_tracking_entry($id) {
-  global $wpdb;
-  $table_name = $wpdb->prefix . 'itbz_pro_tools_package_track';
-
-  $where = array( 'id' => $id );
-
-  $success = $wpdb->delete( $table_name, $where, $format = array( '%d' ) );
-
-  return $success !== false; // Return true on success, false on failure
-}
-
-
-function itbz_pro_tools_get_package_tracking_entries($user_email) {
-  global $wpdb;
-  $table_name = $wpdb->prefix . 'itbz_pro_tools_package_track';
-
-  $sql = "SELECT * FROM $table_name WHERE user_email='" . $user_email . "' AND package_status=1";
-  $results = $wpdb->get_results( $sql );
-
-  return $results;
-}
 
 
 /**
@@ -811,6 +469,7 @@ function itbz_pro_tools_get_package_tracking_entries($user_email) {
              // Check if the product is a credit product (adjust product type or other conditions as needed)
              if (is_credit_product($product_id)) {
                  // Add entry to credit transactions table
+                 /**we will call the api to entry this transection, transection will be recored in traning site. */
                  itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $quantity, 'purchase', $order->ID);
                  itbz_pro_tools_add_user_credits($order->get_billing_email(),  $quantity );
              }
