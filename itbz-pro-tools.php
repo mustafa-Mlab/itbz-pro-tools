@@ -482,7 +482,32 @@ function get_package_products_endpoint() {
      $product = wc_get_product($product_id);
      return $product && $product->is_type('credit');
  }
- 
+
+
+ add_action('woocommerce_order_status_completed', 'record_package_purchase', 10, 1);
+
+ function record_package_purchase($order_id) {
+  $order = wc_get_order($order_id);
+
+  // Check if the order is valid and completed
+  if ($order) {
+      // Loop through order items
+      foreach ($order->get_items() as $item_id => $item) {
+          // Get product ID and quantity
+          $product_id = $item->get_product_id();
+
+          if (is_package_product($product_id)) {
+            $newEntry = itbz_pro_tools_insert_package_tracking_entry( $order->get_billing_email(), $product_id, $order->ID );
+          }
+      }
+  }
+}
+
+function is_package_product($product_id) {
+  $product = wc_get_product($product_id);
+  return $product && $product->is_type('packages');
+}
+
 
 /**
  * This part will be used in future
