@@ -408,8 +408,12 @@ add_action('init', 'check_woocommerce_for_pro_tools_product');
              if (itbz_pro_tools_is_credit_product($product_id)) {
                  // Add entry to credit transactions table
                  /**we will call the api to entry this transection, transection will be recored in traning site. */
-                 itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $credit_amount, 'purchase', $order->ID);
-                 itbz_pro_tools_add_user_credits($order->get_billing_email(),  $credit_amount );
+                 if (function_exists('itbz_pro_tools_add_credit_transaction')) {
+                  itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $credit_amount, 'purchase', $order->ID);
+                 }
+                 if (function_exists('itbz_pro_tools_add_user_credits')) {
+                  itbz_pro_tools_add_user_credits($order->get_billing_email(),  $credit_amount );
+                 }
              }
          }
      }
@@ -435,7 +439,9 @@ add_action('init', 'check_woocommerce_for_pro_tools_product');
           $product_id = $item->get_product_id();
 
           if (itbz_pro_tools_is_package_product($product_id)) {
-            $newEntry = itbz_pro_tools_insert_package_tracking_entry( $order->get_billing_email(), $product_id, $order->ID );
+            if (function_exists('itbz_pro_tools_insert_package_tracking_entry')) {
+              $newEntry = itbz_pro_tools_insert_package_tracking_entry( $order->get_billing_email(), $product_id, $order->ID );
+            }
           }
       }
   }
