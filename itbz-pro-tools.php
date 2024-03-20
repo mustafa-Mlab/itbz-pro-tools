@@ -108,9 +108,9 @@ function enqueue_itbz_pro_tools_admin_js_css() {
 add_action('admin_enqueue_scripts', 'enqueue_itbz_pro_tools_admin_js_css');
 
 
-// function get_training_db_for_pro_tools(){
-//   return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
-// }
+function get_training_db_for_pro_tools(){
+  return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
+}
 
 
 
@@ -470,8 +470,24 @@ function get_package_products_endpoint() {
              if (is_credit_product($product_id)) {
                  // Add entry to credit transactions table
                  /**we will call the api to entry this transection, transection will be recored in traning site. */
-                 itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $quantity, 'purchase', $order->ID);
-                 itbz_pro_tools_add_user_credits($order->get_billing_email(),  $quantity );
+                 $traning_db = get_training_db();
+                 $training_db_prefix = 'uvw_';
+                 $table_name = $training_db_prefix . 'itbz_pro_tools_credit_transactions';
+                 $result = $wpdb->insert(
+                  $table_name,
+                  array(
+                      'user_email' => $order->get_billing_email(),
+                      'credits_amount' => $quantity,
+                      'transaction_date' => current_time('mysql'),
+                      'transaction_type' => 'purchase',
+                      'order_id' => $order->ID,
+                  ),
+                  array('%s', '%d', '%s', '%s', '%d')
+                );
+                if($result == false){
+                  return false;
+                }
+                
              }
          }
      }
@@ -497,7 +513,29 @@ function get_package_products_endpoint() {
           $product_id = $item->get_product_id();
 
           if (is_package_product($product_id)) {
-            $newEntry = itbz_pro_tools_insert_package_tracking_entry( $order->get_billing_email(), $product_id, $order->ID );
+            $traning_db = get_training_db();
+            $training_db_prefix = 'uvw_';
+            $table_name = $training_db_prefix . 'itbz_pro_tools_package_track';
+
+            $today = date('Y-m-d'); 
+            $package_exp_date = date('Y-m-d', strtotime('+1 year', strtotime($today)));
+            $success = $wpdb->insert(
+              $table_name,
+              array(
+                'user_email' => $order->get_billing_email(),
+                'package_id' => $product_id,
+                'package_exp_date' => $package_exp_date,
+                'order_id' => $order->ID,
+                'package_status' => 1
+              ),
+              array(
+                '%s',
+                '%d',
+                '%s',
+                '%d',
+                '%d',
+              )
+            );
           }
       }
   }
