@@ -473,7 +473,7 @@ function get_package_products_endpoint() {
                  $traning_db = get_training_db();
                  $training_db_prefix = 'uvw_';
                  $table_name = $training_db_prefix . 'itbz_pro_tools_credit_transactions';
-                 $result = $wpdb->insert(
+                 $result = $traning_db->insert(
                   $table_name,
                   array(
                       'user_email' => $order->get_billing_email(),
@@ -519,7 +519,7 @@ function get_package_products_endpoint() {
 
             $today = date('Y-m-d'); 
             $package_exp_date = date('Y-m-d', strtotime('+1 year', strtotime($today)));
-            $success = $wpdb->insert(
+            $success = $traning_db->insert(
               $table_name,
               array(
                 'user_email' => $order->get_billing_email(),
