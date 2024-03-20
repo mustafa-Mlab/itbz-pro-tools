@@ -72,13 +72,13 @@ function deactivate_itbz_pro_tools() {
  * The code that runs during plugin deletion.
  * This action is documented in includes/deletion.php
  */
-function itbz_pro_tools_uninstall_for_traning() {
+function itbz_pro_tools_uninstall() {
 	require_once plugin_dir_path( __FILE__ ) . 'includes/deletion.php';
 }
 
 register_activation_hook( __FILE__, 'activate_itbz_pro_tools' );
 register_deactivation_hook( __FILE__, 'deactivate_itbz_pro_tools' );
-register_uninstall_hook(__FILE__, 'itbz_pro_tools_uninstall_for_traning');
+register_uninstall_hook(__FILE__, 'itbz_pro_tools_uninstall');
 
 // Include necessary WordPress functions
 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
@@ -106,31 +106,6 @@ function enqueue_itbz_pro_tools_admin_js_css() {
   wp_enqueue_script('pro-tools-admin', ITBZ_PRO_TOOLS_DIR_URL . 'assets/admin-part.js' , array('jquery'), '1.0', true);
 }
 add_action('admin_enqueue_scripts', 'enqueue_itbz_pro_tools_admin_js_css');
-
-
-// function get_training_db_for_pro_tools(){
-//   return new wpdb(WP_OMT_DATABASE_USER, WP_OMT_DATABASE_PASSWORD, WP_OMT_DATABASE_NAME, WP_OMT_DATABASE_HOST);
-// }
-
-
-
-// Redirect Tools managers to home page while login
-// function redirect_tools_manager() {
-//   if ( if_tools_manager() && !is_admin() ) {
-//     wp_redirect( home_url() );
-//     exit;
-//   }
-// }
-
-// // Prevent Tools manager to login on admin panel
-// add_action( 'login_redirect', 'redirect_tools_manager' );
-// function prevent_tools_manager_admin_access() {
-//   if ( if_tools_manager() && is_admin() ) {
-//     wp_redirect( home_url() );
-//     exit;
-//   }
-// }
-// add_action( 'admin_init', 'prevent_tools_manager_admin_access' );
 
 
 // Ensure WooCommerce is loaded
@@ -281,12 +256,12 @@ function check_woocommerce_for_pro_tools_product() {
 
     add_action( 'woocommerce_single_product_summary', 'credit_product_front' );
 
-    // function credit_product_front () {
-    //   global $product;
-    //   if ( 'credit' == $product->get_type() ) { 
-    //     echo( get_post_meta( $product->get_id(), '_associated_product_id' )[0] );
-    //   }
-    // }
+    function credit_product_front () {
+      global $product;
+      if ( 'credit' == $product->get_type() ) { 
+        echo( get_post_meta( $product->get_id(), '_credit_amount', true ) );
+      }
+    }
 
     function add_pro_tools_product_type_support($product_types) {
       $product_types[] = 'credit';
@@ -357,13 +332,13 @@ function check_woocommerce_for_pro_tools_product() {
     }
     add_action('admin_footer', 'enable_product_js_for_packages_product_unique');
 
-    // Save the package_details product data
+    // Save the credit amount 
     function save_custom_product_data_unique($product_id) {
-      if (isset($_POST['_package_details'])) {
-          update_post_meta($product_id, '_package_details', sanitize_text_field($_POST['_package_details']));
+      if (isset($_POST['_credit_amount'])) {
+          update_post_meta($product_id, '_credit_amount', sanitize_text_field($_POST['_credit_amount']));
       }
     }
-    // add_action('woocommerce_process_product_meta', 'save_custom_product_data_unique');
+    add_action('woocommerce_process_product_meta', 'save_custom_product_data_unique');
 
     // Modify the product data tabs for the 'packages' product type
     function packages_product_tabs_unique($tabs) {
@@ -401,45 +376,6 @@ function check_woocommerce_for_pro_tools_product() {
 add_action('init', 'check_woocommerce_for_pro_tools_product');
 
 
-// REST API endpoint to get all package products
-/** this API will be called from Traning site while packagelist needed. */
-add_action('rest_api_init', function () {
-  register_rest_route('pro-tools-fc/v1', '/get_package_products/', array(
-      'methods' => 'GET',
-      'callback' => 'get_package_products_endpoint',
-  ));
-});
-
-// Callback function for the get_package_products REST API endpoint
-function get_package_products_endpoint() {
-  $args = array(
-    'post_type' => 'product',
-    'post_status' => 'publish',
-    'tax_query' => array(
-      array(
-        'taxonomy' => 'product_type',
-        'field' => 'slug',
-        'terms' => array( 'packages' ),
-      ),
-    ),
-  );
-
-  $loop = new WP_Query( $args );
-  $products_data = [];
-  foreach( $loop->posts as $post){
-    // $product = wc_get_product( $post->ID );
-    $product_data = array(
-        'id' => $post->ID,
-        'name' => get_the_title($post->ID),
-        'price' => get_post_meta($post->ID, '_price', true),
-    );
-
-    $products_data[] = $product_data;
-  }
-
-  return $products_data;
-  
-}
 
 
 
@@ -452,10 +388,10 @@ function get_package_products_endpoint() {
  */
 
  // Hook to execute when an order is completed
- add_action('woocommerce_order_status_completed', 'record_credit_purchase', 10, 1);
+ add_action('woocommerce_order_status_completed', 'itbz_pro_tools_record_credit_purchase', 10, 1);
 
  // Function to record credit purchase transaction
- function record_credit_purchase($order_id) {
+ function itbz_pro_tools_record_credit_purchase($order_id) {
      $order = wc_get_order($order_id);
  
      // Check if the order is valid and completed
@@ -465,28 +401,30 @@ function get_package_products_endpoint() {
              // Get product ID and quantity
              $product_id = $item->get_product_id();
              $quantity = $item->get_quantity();
+
+             $credit_amount = get_post_meta($product_id, '_credit_amount', true);
  
              // Check if the product is a credit product (adjust product type or other conditions as needed)
-             if (is_credit_product($product_id)) {
+             if (itbz_pro_tools_is_credit_product($product_id)) {
                  // Add entry to credit transactions table
                  /**we will call the api to entry this transection, transection will be recored in traning site. */
-                 itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $quantity, 'purchase', $order->ID);
-                 itbz_pro_tools_add_user_credits($order->get_billing_email(),  $quantity );
+                 itbz_pro_tools_add_credit_transaction($order->get_billing_email(), $credit_amount, 'purchase', $order->ID);
+                 itbz_pro_tools_add_user_credits($order->get_billing_email(),  $credit_amount );
              }
          }
      }
  }
  
  // Function to check if a product is a credit product (modify as needed)
- function is_credit_product($product_id) {
+ function itbz_pro_tools_is_credit_product($product_id) {
      $product = wc_get_product($product_id);
      return $product && $product->is_type('credit');
  }
 
 
- add_action('woocommerce_order_status_completed', 'record_package_purchase', 10, 1);
+ add_action('woocommerce_order_status_completed', 'itbz_pro_tools_record_package_purchase', 10, 1);
 
- function record_package_purchase($order_id) {
+ function itbz_pro_tools_record_package_purchase($order_id) {
   $order = wc_get_order($order_id);
 
   // Check if the order is valid and completed
@@ -496,14 +434,14 @@ function get_package_products_endpoint() {
           // Get product ID and quantity
           $product_id = $item->get_product_id();
 
-          if (is_package_product($product_id)) {
+          if (itbz_pro_tools_is_package_product($product_id)) {
             $newEntry = itbz_pro_tools_insert_package_tracking_entry( $order->get_billing_email(), $product_id, $order->ID );
           }
       }
   }
 }
 
-function is_package_product($product_id) {
+function itbz_pro_tools_is_package_product($product_id) {
   $product = wc_get_product($product_id);
   return $product && $product->is_type('packages');
 }
